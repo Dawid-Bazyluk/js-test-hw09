@@ -13,11 +13,8 @@ function createPromise(position, delay) {
         Notiflix.Notify.success(
           `✅ Fulfilled promise ${position} in ${delay}ms`
         );
-      } else {
-        Notiflix.Notify.warning(
-          `❌ Rejected promise ${position} in ${delay}ms`
-        );
       }
+      Notiflix.Notify.warning(`❌ Rejected promise ${position} in ${delay}ms`);
     }, delay);
   });
 }
