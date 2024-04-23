@@ -8,8 +8,6 @@ const minutesCounter = document.querySelector('[data-minutes]');
 const secondsCounter = document.querySelector('[data-seconds]');
 
 startButton.disabled = true;
-let selectedDate;
-let nowDate = new Date();
 
 const options = {
   enableTime: true,
@@ -17,24 +15,41 @@ const options = {
   defaultDate: new Date(),
   minuteIncrement: 1,
   onClose(selectedDates) {
-    if (selectedDates[0] <= nowDate) {
+    const selectedDate = selectedDates[0];
+    const now = new Date();
+    if (selectedDate <= now) {
       window.alert('Please choose a date in the future');
-      startButton.disabled = true;
     } else {
       startButton.disabled = false;
-      selectedDate = selectedDates[0];
+      startButton.dataset.start = selectedDate;
     }
   },
 };
 
-flatpickr('#datetime-picker', options);
+flatpickr('input#datetime-picker', options);
 
-const addLeadingZero = value => {
-  return value.padStart(2, 0);
-};
+startButton.addEventListener('click', ev => {
+  const { start } = ev.currentTarget.dataset;
+  const timeThen = new Date(start);
+  let interval = null;
+  interval = setInterval(() => {
+    const timeNow = new Date();
+    const timeLeft = timeThen.getTime() - timeNow.getTime();
+
+    const timeLeftObj = convertMs(timeLeft);
+
+    if (timeLeft >= 0) {
+      daysCounter.innerText = `${timeLeftObj.days}`.padStart(2, '0');
+      hoursCounter.innerText = `${timeLeftObj.hours}`.padStart(2, '0');
+      minutesCounter.innerText = `${timeLeftObj.minutes}`.padStart(2, '0');
+      secondsCounter.innerText = `${timeLeftObj.seconds}`.padStart(2, '0');
+    }
+
+    if (timeLeft <= 0) clearInterval(interval);
+  }, 1000);
+});
 
 function convertMs(ms) {
-  nowDate = new Date();
   // Number of milliseconds per unit of time
   const second = 1000;
   const minute = second * 60;
@@ -50,20 +65,5 @@ function convertMs(ms) {
   // Remaining seconds
   const seconds = Math.floor((((ms % day) % hour) % minute) / second);
 
-  daysCounter.innerText = addLeadingZero(String(days));
-  hoursCounter.innerText = addLeadingZero(String(hours));
-  minutesCounter.innerText = addLeadingZero(String(minutes));
-  secondsCounter.innerText = addLeadingZero(String(seconds));
+  return { days, hours, minutes, seconds };
 }
-
-startButton.addEventListener('click', () => {
-  startButton.disabled = true;
-  const interval = setInterval(() => {
-    let dateDifference = selectedDate.getTime() - nowDate.getTime();
-    if (dateDifference > 0) {
-      convertMs(dateDifference);
-    } else {
-      clearInterval(interval);
-    }
-  }, 1000);
-});
